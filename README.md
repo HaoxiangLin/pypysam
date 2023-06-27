@@ -16,3 +16,7 @@ See `pypy setup.py --help` for further instructions.
 
 #####
 original code is in python2.x
+
+This modified version is in python 3.x. 
+
+If meet import error, just Copy the code in the sys.path

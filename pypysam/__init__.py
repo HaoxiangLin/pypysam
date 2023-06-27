@@ -53,7 +53,7 @@ def parse_region(region_str):
             start,end = [int(x) for x in colon_sep[1:]]
         return colon_sep[0],start,end
     except: 
-        raise ValueError, 'Improperly fomatted region %s' % region_str
+        raise ValueError('Improperly fomatted region %s' % region_str)
 
 class IndexedSequence(object):
     __slots__ = ('name','length','position','line_len','pad_line_len')
@@ -77,7 +77,7 @@ class FastaFile(object):
         if region is not None:
             reference,start,end = parse_region(region)
         elif reference is None:
-            raise ValueError, 'fetch() requires either a reference or a region'
+            raise ValueError('fetch() requires either a reference or a region')
         ind_seq = self.seqs[reference]
         fstart = ind_seq.position
         if start is not None:
@@ -137,7 +137,7 @@ class FastaFile(object):
                 line_no += 1
                 s.tell = self.br.tell()
             elif s.at_end:
-                raise IOError, 'Fasta file must have same line lengths'
+                raise IOError('Fasta file must have same line lengths')
             elif c.isspace():
                 if s.cur_pad == 0:
                     s.cur_pad = 1
@@ -154,8 +154,8 @@ class FastaFile(object):
                     if s.pad == -1:
                         s.pad = s.cur_pad
                     elif s.cur_pad != s.pad:
-                        raise IOError, \
-                                'Odd number of line feeds in line %d' % line_no
+                        raise IOError( \
+                                'Odd number of line feeds in line %d' % line_no)
                     s.cur_pad = 0
                 s.cur_line_len += 1
                 s.length += 1
@@ -190,7 +190,7 @@ class AlignmentFileBase(object):
             self.write_header()
             self.write_mode = True
         else:
-            raise ValueError, 'Unknown mode %s' % mode
+            raise ValueError('Unknown mode %s' % mode)
 
 class AlignedSegment(object):
     _cigar_ops = ['M','I','D','N','S','H','P','=','X']
@@ -330,13 +330,13 @@ class Tag(object):
 class SamTag(Tag):
     _tag_sam_types = 'cCsSiIAf'
     _tag_pystruct_types = 'bBhHiIcf'
-    _tag_trans = string.maketrans(_tag_sam_types,_tag_pystruct_types)
+    _tag_trans = str.maketrans(_tag_sam_types,_tag_pystruct_types)
 
     def __init__(self,tag,val_type,value=None,value_block=None):
         super(SamTag,self).__init__(tag,val_type,value)
         self._value_block = value_block
         if value is None and value_block is None:
-            raise ValueError, 'Tag requires either a value or a value block'
+            raise ValueError('Tag requires either a value or a value block')
 
     @property
     def value(self):
@@ -347,7 +347,7 @@ class SamTag(Tag):
                 self._value = struct.unpack(
                     self.val_type.translate(self._tag_trans),self._value_block)[0]
             else:
-                raise NotImplementedError, 'Tag type %s not implemented' % val_type
+                raise NotImplementedError('Tag type %s not implemented' % val_type)
         return self._value
 
     @property
@@ -361,13 +361,13 @@ class SamTag(Tag):
 class SamFile(AlignmentFileBase):
     _magic = b"\x40\x48\x44\x20"
     def __init__(self):
-        raise NotImplementedError, 'SAM file handling is not implemented yet'
+        raise NotImplementedError('SAM file handling is not implemented yet')
 
            
 class CramFile(AlignmentFileBase):
     _magic = b"\x43\x52\x41\x4d"
     def __init__(self):
-        raise NotImplementedError, 'Cram file handling is not implemented yet'
+        raise NotImplementedError( 'Cram file handling is not implemented yet')
 
 def AlignmentFile(filepath,mode='r',**kwargs):
     filepath = filepath
@@ -376,16 +376,16 @@ def AlignmentFile(filepath,mode='r',**kwargs):
         magic = fh.read(4)
         magic_map = {cls._magic:cls for cls in [BamFile,CramFile,SamFile]}
         if magic not in magic_map:
-            raise ValueError, 'Unknown format for file %s' % filepath
+            raise ValueError( 'Unknown format for file %s' % filepath)
         return magic_map[magic](filepath,mode,**kwargs)
     elif mode[0] == 'w':
         if 'format' not in kwargs:
-            raise ValueError, 'Specify an output format for writing'
+            raise ValueError( 'Specify an output format for writing')
         fmt = kwargs['format']
         format_map = {cls.__name__[:len(fmt)].lower():cls 
                       for cls in [BamFile,CramFile,SamFile]}
         if fmt not in format_map:
-            raise ValueError, 'Unknown format %s' % fmt
+            raise ValueError( 'Unknown format %s' % fmt)
         return format_map[fmt.lower()](filepath,mode,**kwargs)
 
 
@@ -441,7 +441,7 @@ class BamFile(AlignmentFileBase):
 
     _tag_sam_types = 'cCsSiIAf'
     _tag_pystruct_types = 'bBhHiIcf'
-    _tag_trans = string.maketrans(_tag_sam_types,_tag_pystruct_types)
+    _tag_trans = str.maketrans(_tag_sam_types,_tag_pystruct_types)
     _tag_sizes = {'c':1, 'C':1, 's':2, 'S':2, 'i': 4, 'I': 4, 'A': 1, 'f': 4}
 
     def __iter__(self):
@@ -449,7 +449,7 @@ class BamFile(AlignmentFileBase):
 
     def write(self,aln):
         if not self.write_mode:
-            raise ValueError, 'Not opened for writing'
+            raise ValueError( 'Not opened for writing')
         if aln.block is not None and aln._block_format == self._magic:
             block = aln.block
         else:
@@ -482,7 +482,7 @@ class BamFile(AlignmentFileBase):
                 elif tag.val_type == 'Z':
                     block += tag.value + '\0'
                 else:
-                    raise ValueError, 'Tag type %s not supported' % tag.val_type
+                    raise ValueError( 'Tag type %s not supported' % tag.val_type)
 
         self.fh.write(struct.pack('i',len(block)) + block)
 
@@ -537,7 +537,7 @@ class BamFile(AlignmentFileBase):
                 value_block = tag_block[i+3:].split('\x00')[0]
                 i += 1 # length of value_block will be -1 the actual block
             else:
-                raise ValueError, 'Tag type %s not supported' % val_type
+                raise ValueError( 'Tag type %s not supported' % val_type)
             i += 3+len(value_block)
             tags.append(SamTag(tag,val_type,value_block=value_block))
 
@@ -578,11 +578,11 @@ class BamFile(AlignmentFileBase):
 
     # XXX: make a single object for the header instead of text and table
     def header_from_object(self,object):
-        raise NotImplementedError, 'Headers from objects not supported yet'
+        raise NotImplementedError('Headers from objects not supported yet')
 
     def write_header(self):
         if not hasattr(self,'header_text'):
-            raise ValueError, 'Cannot write a header when none is defined'
+            raise ValueError( 'Cannot write a header when none is defined')
         self.fh = bgzf.BgzfWriter(self.filepath,self.mode,compresslevel=1)
         block = self._header_magic
         block += struct.pack('i',len(self.header_text)+1)

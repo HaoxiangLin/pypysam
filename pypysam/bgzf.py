@@ -105,7 +105,7 @@ gzip
 Notice that the open function has been replaced. You can "fix" this if you
 need to by importing the built-in open function:
 
->>> from __builtin__ import open
+>>> from builtins import open
 
 However, what we recommend instead is to use the explicit namespace, e.g.
 
@@ -201,7 +201,7 @@ NC_000932.1
 import gzip
 import zlib
 import struct
-import __builtin__ #to access the usual open function
+import builtins #to access the usual open function
 
 from _py3k import _as_bytes, _as_string
 
@@ -296,7 +296,7 @@ def BgzfBlocks(handle):
     decompressed length of the blocks contents (limited to 65536 in
     BGZF).
 
-    >>> from __builtin__ import open
+    >>> from builtin import open
     >>> handle = open("SamBam/ex1.bam", "rb")
     >>> for values in BgzfBlocks(handle):
     ...     print "Raw start %i, raw length %i; data start %i, data length %i" % values
@@ -417,7 +417,7 @@ class BgzfReader(object):
     Let's use the BgzfBlocks function to have a peak at the BGZF blocks
     in an example BAM file,
 
-    >>> from __builtin__ import open
+    >>> from builtins import open
     >>> handle = open("SamBam/ex1.bam", "rb")
     >>> for values in BgzfBlocks(handle):
     ...     print "Raw start %i, raw length %i; data start %i, data length %i" % values
@@ -492,7 +492,7 @@ class BgzfReader(object):
             if "w" in mode.lower() \
             or "a" in mode.lower():
                 raise ValueError("Must use read mode (default), not write or append mode")
-            handle = __builtin__.open(filename, "rb")
+            handle = builtins.open(filename, "rb")
         self._text = "b" not in mode.lower()
         if self._text:
             self._newline = "\n"
@@ -662,9 +662,9 @@ class BgzfWriter(object):
             and "a" not in mode.lower():
                 raise ValueError("Must use write or append mode, not %r" % mode)
             if "a" in mode.lower():
-                handle = __builtin__.open(filename, "ab")
+                handle = builtins.open(filename, "ab")
             else:
-                handle = __builtin__.open(filename, "wb")
+                handle = builtins.open(filename, "wb")
         self._text = "b" not in mode.lower()
         self._handle = handle
         self._buffer = _empty_bytes_string
@@ -690,7 +690,7 @@ class BgzfWriter(object):
         else:
             crc = struct.pack("<I", crc)
         bsize = struct.pack("<H", len(compressed)+25) #includes -1
-        crc = struct.pack("<I", zlib.crc32(block) & 0xffffffffL)
+        crc = struct.pack("<I", zlib.crc32(block) & 0xffffffff)
         uncompressed_length = struct.pack("<I", len(block))
         #Fixed 16 bytes,
         # gzip magic bytes (4) mod time (4),
@@ -745,19 +745,19 @@ class BgzfWriter(object):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
-        print "Call this with no arguments and pipe uncompressed data in on stdin"
-        print "and it will produce BGZF compressed data on stdout. e.g."
+        print ("Call this with no arguments and pipe uncompressed data in on stdin")
+        print ("and it will produce BGZF compressed data on stdout. e.g.")
         print
-        print "./bgzf.py < example.fastq > example.fastq.bgz"
+        print ("./bgzf.py < example.fastq > example.fastq.bgz")
         print
-        print "The extension convention of *.bgz is to distinugish these from *.gz"
-        print "used for standard gzipped files without the block structure of BGZF."
-        print "You can use the standard gunzip command to decompress BGZF files,"
-        print "if it complains about the extension try something like this:"
+        print ("The extension convention of *.bgz is to distinugish these from *.gz")
+        print ("used for standard gzipped files without the block structure of BGZF.")
+        print ("You can use the standard gunzip command to decompress BGZF files,")
+        print ("if it complains about the extension try something like this:")
         print
-        print "cat example.fastq.bgz | gunzip > example.fastq"
+        print ("cat example.fastq.bgz | gunzip > example.fastq")
         print
-        print "See also the tool bgzip that comes with samtools"
+        print ("See also the tool bgzip that comes with samtools")
         sys.exit(0)
 
     sys.stderr.write("Producing BGZF output from stdin...\n")
